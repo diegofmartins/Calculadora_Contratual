@@ -127,7 +127,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 pb-20 font-sans text-slate-900">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur-md print:hidden">
+      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur-md no-print">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-600 text-white shadow-lg shadow-cyan-200">
@@ -386,6 +386,24 @@ export default function App() {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-3 no-print">
+                  <button 
+                    onClick={handlePrint}
+                    className="flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 font-bold text-white shadow-lg shadow-slate-200 transition hover:bg-slate-800"
+                  >
+                    <Printer size={18} />
+                    <span>Imprimir Relatório</span>
+                  </button>
+                  <button 
+                    onClick={() => setShowResetModal(true)}
+                    className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 font-bold text-slate-600 transition hover:bg-slate-50"
+                  >
+                    <RotateCcw size={18} />
+                    <span>Limpar Tudo</span>
+                  </button>
+                </div>
+
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="rounded-3xl bg-white p-6 shadow-sm border border-slate-100">
@@ -479,14 +497,12 @@ export default function App() {
 
                 {/* Detailed Memory (Print Area) */}
                 <AnimatePresence>
-                  {(showMemory || true) && (
+                  {showMemory && (
                     <motion.section 
-                      initial={showMemory ? { height: 0, opacity: 0 } : false}
-                      animate={showMemory ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
-                      className={cn(
-                        "print-area overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg",
-                        !showMemory && "hidden print:block"
-                      )}
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg no-print"
                     >
                       <div className="border-b border-slate-100 bg-slate-50/50 px-8 py-6 text-center">
                         <h2 className="text-2xl font-black text-slate-900">Memória de Cálculo</h2>
@@ -602,11 +618,273 @@ export default function App() {
                     </motion.section>
                   )}
                 </AnimatePresence>
+
+                {/* Dedicated Print Report (Hidden on Screen) */}
+                <div className="hidden print:block print-area">
+                  <div className="mb-12 flex items-center justify-between border-b-4 border-cyan-600 pb-8">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-cyan-600 text-white shadow-lg">
+                        <Calculator size={32} />
+                      </div>
+                      <div>
+                        <h1 className="text-3xl font-black text-slate-900">Relatório de Reajuste Contratual</h1>
+                        <p className="text-sm font-bold uppercase tracking-widest text-slate-400">Lei Federal nº 14.133/2021</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-bold uppercase text-slate-400">Data de Emissão</p>
+                      <p className="text-lg font-bold text-slate-900">{new Date().toLocaleDateString('pt-BR')}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-10">
+                    {/* Resumo Executivo */}
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="rounded-3xl border-2 border-slate-100 p-8">
+                        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Novo Valor Mensal</p>
+                        <p className="mt-2 text-4xl font-black text-cyan-600">{formatCurrency(result.vMensalFinal)}</p>
+                        <p className="mt-2 text-sm font-medium text-slate-500 italic">Anterior: {formatCurrency(result.vMensalOriginal)}</p>
+                      </div>
+                      <div className="rounded-3xl border-2 border-slate-100 p-8">
+                        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Total Retroativo Devido</p>
+                        <p className="mt-2 text-4xl font-black text-emerald-600">{formatCurrency(result.totalRetroativo)}</p>
+                        <p className="mt-2 text-sm font-medium text-slate-500 italic">Referente a {result.diasRetroativos} dias</p>
+                      </div>
+                    </div>
+
+                    {/* Detalhamento Técnico */}
+                    <div className="space-y-6">
+                      <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight border-l-4 border-cyan-600 pl-4">1. Detalhamento do Cálculo</h2>
+                      <div className="rounded-3xl border border-slate-100 p-8 space-y-6">
+                        <div className="grid grid-cols-2 gap-y-6">
+                          <div>
+                            <p className="text-[10px] font-bold uppercase text-slate-400">Modalidade de Reajuste</p>
+                            <p className="font-bold text-slate-900">{result.type}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase text-slate-400">Variação Aplicada</p>
+                            <p className="font-bold text-slate-900">
+                              {result.type === "Reajustamento" 
+                                ? `${result.details.percentual}% (${result.details.indiceNome || 'Índice Geral'})`
+                                : "Repactuação de Custos"
+                              }
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase text-slate-400">Período de Retroatividade</p>
+                            <p className="font-bold text-slate-900">
+                              {result.type === "Reajustamento" 
+                                ? `${formatDate(result.details.dFim)} até ${formatDate(result.details.dConcessao)}`
+                                : `${formatDate(result.details.dAniversario)} até ${formatDate(result.details.dConcessao)}`
+                              }
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase text-slate-400">Base de Cálculo</p>
+                            <p className="font-bold text-slate-900">Diferença Mensal: {formatCurrency(result.vMensalFinal - result.vMensalOriginal)}</p>
+                          </div>
+                        </div>
+                        <div className="mt-4 rounded-2xl bg-slate-50 p-4 font-mono text-xs text-slate-500">
+                          <p className="font-bold uppercase mb-1">Memória de Cálculo:</p>
+                          <p>Valor Retroativo = (Diferença Mensal × Dias de Atraso) / 30</p>
+                          <p>Valor Retroativo = ({formatCurrency(result.vMensalFinal - result.vMensalOriginal)} × {result.diasRetroativos}) / 30</p>
+                          <p className="mt-2 font-bold text-cyan-700">Resultado: {formatCurrency(result.totalRetroativo)}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Planejamento de Empenho */}
+                    {renewalResult && (
+                      <div className="space-y-6 page-break">
+                        <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight border-l-4 border-indigo-600 pl-4">2. Planejamento de Empenho (Renovação)</h2>
+                        <div className="overflow-hidden rounded-3xl border border-slate-100">
+                          <table className="w-full text-left">
+                            <thead className="bg-slate-50">
+                              <tr>
+                                <th className="px-8 py-4 font-bold text-slate-500 uppercase text-xs">Ano Fiscal</th>
+                                <th className="px-8 py-4 font-bold text-slate-500 uppercase text-xs">Período de Vigência</th>
+                                <th className="px-8 py-4 text-right font-bold text-slate-500 uppercase text-xs">Valor a Empenhar</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {renewalResult.empenhoByYear.map(item => (
+                                <tr key={item.year}>
+                                  <td className="px-8 py-5 font-bold text-lg">{item.year}</td>
+                                  <td className="px-8 py-5 text-slate-600">{item.fullMonths} meses e {item.remainingDays} dias</td>
+                                  <td className="px-8 py-5 text-right font-black text-indigo-600 text-lg">{formatCurrency(item.empenho)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                            <tfoot className="bg-slate-900 text-white">
+                              <tr>
+                                <td colSpan={2} className="px-8 py-6 font-bold text-xl">Valor Total do Período ({renewalResult.nMonths} meses)</td>
+                                <td className="px-8 py-6 text-right font-black text-2xl">{formatCurrency(renewalResult.vAnualTotal)}</td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Assinaturas */}
+                    <div className="mt-20 grid grid-cols-2 gap-12 pt-12">
+                      <div className="text-center">
+                        <div className="border-t border-slate-300 pt-4">
+                          <p className="font-bold text-slate-900">Responsável pelo Cálculo</p>
+                          <p className="text-xs text-slate-400 uppercase tracking-widest">Assinatura e Carimbo</p>
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="border-t border-slate-300 pt-4">
+                          <p className="font-bold text-slate-900">Gestor do Contrato</p>
+                          <p className="text-xs text-slate-400 uppercase tracking-widest">Assinatura e Carimbo</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-12 text-center text-[10px] text-slate-400 italic">
+                      Este relatório foi gerado por meio da Calculadora de Reajustes Contratuais.
+                      As informações aqui contidas devem ser conferidas pela autoridade competente.
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             )}
           </div>
         </div>
       </main>
+
+      {/* Dedicated Print Report (Hidden on Screen) */}
+      {result && (
+        <div className="hidden print:block print-area">
+          <div className="mb-12 flex items-center justify-between border-b-4 border-cyan-600 pb-8">
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-cyan-600 text-white shadow-lg">
+                <Calculator size={32} />
+              </div>
+              <div>
+                <h1 className="text-3xl font-black text-slate-900">Relatório de Reajuste Contratual</h1>
+                <p className="text-sm font-bold uppercase tracking-widest text-slate-400">Lei Federal nº 14.133/2021</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-bold uppercase text-slate-400">Data de Emissão</p>
+              <p className="text-lg font-bold text-slate-900">{new Date().toLocaleDateString('pt-BR')}</p>
+            </div>
+          </div>
+
+          <div className="space-y-10">
+            {/* Resumo Executivo */}
+            <div className="grid grid-cols-2 gap-6">
+              <div className="rounded-3xl border-2 border-slate-100 p-8">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Novo Valor Mensal</p>
+                <p className="mt-2 text-4xl font-black text-cyan-600">{formatCurrency(result.vMensalFinal)}</p>
+                <p className="mt-2 text-sm font-medium text-slate-500 italic">Anterior: {formatCurrency(result.vMensalOriginal)}</p>
+              </div>
+              <div className="rounded-3xl border-2 border-slate-100 p-8">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Total Retroativo Devido</p>
+                <p className="mt-2 text-4xl font-black text-emerald-600">{formatCurrency(result.totalRetroativo)}</p>
+                <p className="mt-2 text-sm font-medium text-slate-500 italic">Referente a {result.diasRetroativos} dias</p>
+              </div>
+            </div>
+
+            {/* Detalhamento Técnico */}
+            <div className="space-y-6">
+              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight border-l-4 border-cyan-600 pl-4">1. Detalhamento do Cálculo</h2>
+              <div className="rounded-3xl border border-slate-100 p-8 space-y-6">
+                <div className="grid grid-cols-2 gap-y-6">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase text-slate-400">Modalidade de Reajuste</p>
+                    <p className="font-bold text-slate-900">{result.type}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase text-slate-400">Variação Aplicada</p>
+                    <p className="font-bold text-slate-900">
+                      {result.type === "Reajustamento" 
+                        ? `${result.details.percentual}% (${result.details.indiceNome || 'Índice Geral'})`
+                        : "Repactuação de Custos"
+                      }
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase text-slate-400">Período de Retroatividade</p>
+                    <p className="font-bold text-slate-900">
+                      {result.type === "Reajustamento" 
+                        ? `${formatDate(result.details.dFim)} até ${formatDate(result.details.dConcessao)}`
+                        : `${formatDate(result.details.dAniversario)} até ${formatDate(result.details.dConcessao)}`
+                      }
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase text-slate-400">Base de Cálculo</p>
+                    <p className="font-bold text-slate-900">Diferença Mensal: {formatCurrency(result.vMensalFinal - result.vMensalOriginal)}</p>
+                  </div>
+                </div>
+                <div className="mt-4 rounded-2xl bg-slate-50 p-4 font-mono text-xs text-slate-500">
+                  <p className="font-bold uppercase mb-1">Memória de Cálculo:</p>
+                  <p>Valor Retroativo = (Diferença Mensal × Dias de Atraso) / 30</p>
+                  <p>Valor Retroativo = ({formatCurrency(result.vMensalFinal - result.vMensalOriginal)} × {result.diasRetroativos}) / 30</p>
+                  <p className="mt-2 font-bold text-cyan-700">Resultado: {formatCurrency(result.totalRetroativo)}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Planejamento de Empenho */}
+            {renewalResult && (
+              <div className="space-y-6 page-break">
+                <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight border-l-4 border-indigo-600 pl-4">2. Planejamento de Empenho (Renovação)</h2>
+                <div className="overflow-hidden rounded-3xl border border-slate-100">
+                  <table className="w-full text-left">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th className="px-8 py-4 font-bold text-slate-500 uppercase text-xs">Ano Fiscal</th>
+                        <th className="px-8 py-4 font-bold text-slate-500 uppercase text-xs">Período de Vigência</th>
+                        <th className="px-8 py-4 text-right font-bold text-slate-500 uppercase text-xs">Valor a Empenhar</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {renewalResult.empenhoByYear.map(item => (
+                        <tr key={item.year}>
+                          <td className="px-8 py-5 font-bold text-lg">{item.year}</td>
+                          <td className="px-8 py-5 text-slate-600">{item.fullMonths} meses e {item.remainingDays} dias</td>
+                          <td className="px-8 py-5 text-right font-black text-indigo-600 text-lg">{formatCurrency(item.empenho)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-slate-900 text-white">
+                      <tr>
+                        <td colSpan={2} className="px-8 py-6 font-bold text-xl">Valor Total do Período ({renewalResult.nMonths} meses)</td>
+                        <td className="px-8 py-6 text-right font-black text-2xl">{formatCurrency(renewalResult.vAnualTotal)}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Assinaturas */}
+            <div className="mt-20 grid grid-cols-2 gap-12 pt-12 border-t border-slate-100">
+              <div className="text-center">
+                <div className="border-t border-slate-300 pt-4">
+                  <p className="font-bold text-slate-900">Responsável pelo Cálculo</p>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-widest">Assinatura e Carimbo</p>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="border-t border-slate-300 pt-4">
+                  <p className="font-bold text-slate-900">Gestor do Contrato</p>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-widest">Assinatura e Carimbo</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-12 text-center text-[10px] text-slate-400 italic">
+              Este relatório foi gerado por meio da Calculadora de Reajustes Contratuais.
+              As informações aqui contidas devem ser conferidas pela autoridade competente.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reset Confirmation Modal */}
       <AnimatePresence>

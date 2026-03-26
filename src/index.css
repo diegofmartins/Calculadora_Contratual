@@ -19,21 +19,46 @@ body {
 
 @media print {
   @page {
-    margin: 1cm;
+    margin: 1.5cm;
+    size: auto;
   }
-  body > *:not(.print-area) {
-    display: none !important;
+  
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt;
   }
-  .print-area {
-    display: block !important;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    background: white;
-    color: black;
-  }
+
   .no-print {
     display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  /* Reset layout for print */
+  .print-area {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Force background colors in print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Page breaks */
+  .page-break {
+    page-break-before: always;
   }
 }
