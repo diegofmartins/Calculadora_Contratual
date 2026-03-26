@@ -4,7 +4,8 @@ Esta é uma ferramenta profissional para cálculo de reajustes, repactuações e
 
 ## Como hospedar no GitHub Pages
 
-Este projeto está configurado para ser hospedado em um repositório chamado **`Calculadora_Contratual`**.
+Este projeto está configurado para ser hospedado em:
+`https://diegofmartins.github.io/Calculadora_Contratual/`
 
 ### Passos para Configuração:
 
