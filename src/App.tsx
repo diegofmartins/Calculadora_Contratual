@@ -756,110 +756,143 @@ export default function App() {
 
       {/* Dedicated Print Report (Hidden on Screen) */}
       {result && (
-        <div className="hidden print:block print-area">
-          <div className="mb-12 flex items-center justify-between border-b-4 border-cyan-600 pb-8">
-            <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-cyan-600 text-white shadow-lg">
-                <Calculator size={32} />
-              </div>
-              <div>
-                <h1 className="text-3xl font-black text-slate-900">Relatório de Reajuste Contratual</h1>
-                <p className="text-sm font-bold uppercase tracking-widest text-slate-400">Lei Federal nº 14.133/2021</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-xs font-bold uppercase text-slate-400">Data de Emissão</p>
-              <p className="text-lg font-bold text-slate-900">{new Date().toLocaleDateString('pt-BR')}</p>
-            </div>
+        <div className="hidden print:block print-area font-sans text-slate-900">
+          {/* Header */}
+          <div className="mb-10 text-center border-b-2 border-slate-100 pb-8">
+            <h1 className="text-4xl font-black tracking-tight text-slate-900">Memória de Cálculo Detalhada</h1>
+            <p className="mt-2 text-sm font-bold uppercase tracking-widest text-slate-400">
+              Documento Gerado pela Calculadora de Contratos (Lei 14.133/2021)
+            </p>
           </div>
 
-          <div className="space-y-10">
-            {/* Resumo Executivo */}
-            <div className="grid grid-cols-2 gap-6">
-              <div className="rounded-3xl border-2 border-slate-100 p-8">
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Novo Valor Mensal</p>
-                <p className="mt-2 text-4xl font-black text-cyan-600">{formatCurrency(result.vMensalFinal)}</p>
-                <p className="mt-2 text-sm font-medium text-slate-500 italic">Anterior: {formatCurrency(result.vMensalOriginal)}</p>
-              </div>
-              <div className="rounded-3xl border-2 border-slate-100 p-8">
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Total Retroativo Devido</p>
-                <p className="mt-2 text-4xl font-black text-emerald-600">{formatCurrency(result.totalRetroativo)}</p>
-                <p className="mt-2 text-sm font-medium text-slate-500 italic">Referente a {result.diasRetroativos} dias</p>
-              </div>
-            </div>
-
-            {/* Detalhamento Técnico */}
-            <div className="space-y-6">
-              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight border-l-4 border-cyan-600 pl-4">1. Detalhamento do Cálculo</h2>
-              <div className="rounded-3xl border border-slate-100 p-8 space-y-6">
-                <div className="grid grid-cols-2 gap-y-6">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase text-slate-400">Modalidade de Reajuste</p>
-                    <p className="font-bold text-slate-900">{result.type}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase text-slate-400">Variação Aplicada</p>
-                    <p className="font-bold text-slate-900">
-                      {result.type === "Reajustamento" 
-                        ? `${result.details.percentual}% (${result.details.indiceNome || 'Índice Geral'})`
-                        : "Repactuação de Custos"
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase text-slate-400">Período de Retroatividade</p>
-                    <p className="font-bold text-slate-900">
-                      {result.type === "Reajustamento" 
-                        ? `${formatDate(result.details.dFim)} até ${formatDate(result.details.dConcessao)}`
-                        : `${formatDate(result.details.dAniversario)} até ${formatDate(result.details.dConcessao)}`
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase text-slate-400">Base de Cálculo</p>
-                    <p className="font-bold text-slate-900">Diferença Mensal: {formatCurrency(result.vMensalFinal - result.vMensalOriginal)}</p>
-                  </div>
+          <div className="space-y-12">
+            {/* 1. Detalhes do Reajustamento */}
+            <section className="space-y-6">
+              <h2 className="text-xl font-black text-cyan-700 uppercase tracking-tight border-l-4 border-cyan-600 pl-4">
+                1. Detalhes do Reajustamento (Art. 135 da Lei nº 14.133/2021)
+              </h2>
+              
+              <div className="grid grid-cols-2 gap-x-12 gap-y-6 rounded-3xl border border-slate-100 p-8">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Valor Base Mensal</p>
+                  <p className="text-lg font-bold text-slate-900">{formatCurrency(result.vMensalOriginal)}</p>
                 </div>
-                <div className="mt-4 rounded-2xl bg-slate-50 p-4 font-mono text-xs text-slate-500">
-                  <p className="font-bold uppercase mb-1">Memória de Cálculo:</p>
-                  <p>Valor Retroativo = (Diferença Mensal × Dias de Atraso) / 30</p>
-                  <p>Valor Retroativo = ({formatCurrency(result.vMensalFinal - result.vMensalOriginal)} × {result.diasRetroativos}) / 30</p>
-                  <p className="mt-2 font-bold text-cyan-700">Resultado: {formatCurrency(result.totalRetroativo)}</p>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Índice Aplicado</p>
+                  <p className="text-lg font-bold text-slate-900">
+                    {result.type === "Reajustamento" 
+                      ? `${result.details.indiceNome || 'Índice'} (${result.details.percentual}%)`
+                      : "Repactuação de Custos"
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Período de Correção</p>
+                  <p className="text-lg font-bold text-slate-900">
+                    {result.type === "Reajustamento" 
+                      ? `${formatDate(result.details.dInicio)} a ${formatDate(result.details.dFim)}`
+                      : formatDate(result.details.dAniversario)
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Data de Concessão (Pagamento)</p>
+                  <p className="text-lg font-bold text-slate-900">{formatDate(result.details.dConcessao)}</p>
                 </div>
               </div>
-            </div>
 
-            {/* Planejamento de Empenho */}
+              <div className="rounded-3xl bg-cyan-50/50 p-8 border border-cyan-100">
+                <p className="text-[10px] font-black uppercase tracking-widest text-cyan-600 mb-4">
+                  1.1. {result.type === "Reajustamento" ? "Fórmula de Atualização do Valor Contratual (Reajuste):" : "Demonstração da Repactuação de Preços:"}
+                </p>
+                <div className="font-mono text-sm text-slate-600 space-y-2">
+                  {result.type === "Reajustamento" ? (
+                    <p>
+                      Novo Valor Mensal ({formatCurrency(result.vMensalFinal)}) = Valor Base ({formatCurrency(result.vMensalOriginal)}) × (1 + {result.details.percentual}% / 100)
+                    </p>
+                  ) : (
+                    <p>
+                      Novo Valor Mensal ({formatCurrency(result.vMensalFinal)}) = Valor Original ({formatCurrency(result.vMensalOriginal)}) + Diferença de Custos Aprovada ({formatCurrency(result.vMensalFinal - result.vMensalOriginal)})
+                    </p>
+                  )}
+                </div>
+                <p className="mt-6 text-2xl font-black text-slate-900">
+                  Novo Valor Mensal {result.type === "Reajustamento" ? "Reajustado" : "Repactuado"}: <span className="text-cyan-600">{formatCurrency(result.vMensalFinal)}</span>
+                </p>
+              </div>
+            </section>
+
+            {/* 2. Cálculo do Retroativo */}
+            <section className="space-y-6">
+              <h2 className="text-xl font-black text-emerald-700 uppercase tracking-tight border-l-4 border-emerald-600 pl-4">
+                2. Cálculo do Retroativo
+              </h2>
+              
+              <div className="rounded-3xl bg-emerald-50/50 p-8 border border-emerald-100 space-y-8">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-2">2.1. Diferença Mensal Devida (Base do Retroativo):</p>
+                  <p className="font-mono text-sm text-slate-600">
+                    Diferença Mensal = Valor Novo ({formatCurrency(result.vMensalFinal)}) - Valor Base ({formatCurrency(result.vMensalOriginal)}) = {formatCurrency(result.vMensalFinal - result.vMensalOriginal)}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-2">2.2. Cálculo da Apropriação por Dias:</p>
+                  <p className="font-mono text-sm text-slate-600">
+                    Total Retroativo = Diferença Mensal ({formatCurrency(result.vMensalFinal - result.vMensalOriginal)}) × (Dias Devidos ({result.diasRetroativos} dias) / Base Diária (30))
+                  </p>
+                </div>
+
+                <p className="text-2xl font-black text-slate-900">
+                  Total Retroativo a Pagar: <span className="text-emerald-600">{formatCurrency(result.totalRetroativo)}</span>
+                </p>
+              </div>
+            </section>
+
+            {/* 3. Planejamento Orçamentário da Renovação */}
             {renewalResult && (
-              <div className="space-y-6 page-break">
-                <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight border-l-4 border-indigo-600 pl-4">2. Planejamento de Empenho (Renovação)</h2>
-                <div className="overflow-hidden rounded-3xl border border-slate-100">
-                  <table className="w-full text-left">
-                    <thead className="bg-slate-50">
-                      <tr>
-                        <th className="px-8 py-4 font-bold text-slate-500 uppercase text-xs">Ano Fiscal</th>
-                        <th className="px-8 py-4 font-bold text-slate-500 uppercase text-xs">Período de Vigência</th>
-                        <th className="px-8 py-4 text-right font-bold text-slate-500 uppercase text-xs">Valor a Empenhar</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {renewalResult.empenhoByYear.map(item => (
-                        <tr key={item.year}>
-                          <td className="px-8 py-5 font-bold text-lg">{item.year}</td>
-                          <td className="px-8 py-5 text-slate-600">{item.fullMonths} meses e {item.remainingDays} dias</td>
-                          <td className="px-8 py-5 text-right font-black text-indigo-600 text-lg">{formatCurrency(item.empenho)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot className="bg-slate-900 text-white">
-                      <tr>
-                        <td colSpan={2} className="px-8 py-6 font-bold text-xl">Valor Total do Período ({renewalResult.nMonths} meses)</td>
-                        <td className="px-8 py-6 text-right font-black text-2xl">{formatCurrency(renewalResult.vAnualTotal)}</td>
-                      </tr>
-                    </tfoot>
-                  </table>
+              <section className="space-y-6 page-break">
+                <h2 className="text-xl font-black text-indigo-700 uppercase tracking-tight border-l-4 border-indigo-600 pl-4">
+                  3. Planejamento Orçamentário da Renovação
+                </h2>
+                
+                <div className="grid grid-cols-2 gap-8 mb-6">
+                  <div className="rounded-2xl border border-slate-100 p-6">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Valor Total Renovação ({renewalResult.nMonths} Meses)</p>
+                    <p className="text-xl font-black text-slate-900">{formatCurrency(renewalResult.vAnualTotal)}</p>
+                  </div>
+                  <div className="rounded-2xl border border-slate-100 p-6">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Período Total</p>
+                    <p className="text-xl font-black text-slate-900">{formatDate(renewalResult.dRenovStart)} a {formatDate(renewalResult.dRenovEnd)} ({renewalResult.totalDiasRenovacao} dias)</p>
+                  </div>
                 </div>
-              </div>
+
+                <div className="grid grid-cols-2 gap-8">
+                  {renewalResult.empenhoByYear.map((item, idx) => (
+                    <div key={item.year} className="rounded-3xl bg-slate-50 p-8 border border-slate-100 space-y-4">
+                      <h3 className="text-lg font-black text-indigo-600">Empenho Ano Fiscal {item.year}</h3>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Período Orçamentário: {item.fullMonths} meses + {item.remainingDays} dias</p>
+                      
+                      <div className="font-mono text-[10px] leading-relaxed text-slate-400 italic">
+                        Empenho ({formatCurrency(item.empenho)}) = Valor Total Renovação ({formatCurrency(renewalResult.vAnualTotal)}) × (Dias no Ano Fiscal ({item.days} dias) / Total de Dias Renovação ({renewalResult.totalDiasRenovacao} dias))
+                      </div>
+
+                      <p className="text-xl font-black text-slate-900">
+                        Valor: <span className="text-indigo-600">{formatCurrency(item.empenho)}</span>
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-8 text-right space-y-2">
+                  <p className="text-xl font-black text-slate-900">
+                    Total Empenhado (Soma dos Anos Fiscais): <span className="text-indigo-600">{formatCurrency(renewalResult.totalEmpenhoCalculado)}</span>
+                  </p>
+                  <p className="text-[10px] text-slate-400 italic">
+                    O valor total empenhado é matematicamente exato (proporcional) e confere com o Valor Total Renovação.
+                  </p>
+                </div>
+              </section>
             )}
 
             {/* Assinaturas */}
